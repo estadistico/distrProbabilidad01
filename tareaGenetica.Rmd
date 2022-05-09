@@ -1,0 +1,158 @@
+---
+title: "TareaR"
+author: "Pablo"
+date: "16/12/2021"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Expresion genetica
+
+
+Se cargan los datos desde la libreria ISLR 
+
+```{r message=FALSE,warning=FALSE}
+library(ISLR)
+
+nci.data=NCI60$data
+str(nci.data)
+nci.labs= NCI60$labs
+
+```
+
+### Problema 1
+
+Realice un analisis de clusteres con el objetivo de averiguar si las observaciones...
+
+
+```{r message=FALSE,warning=FALSE}
+
+nci.data.norm=scale(nci.data)
+
+matriz.dist=dist(nci.data.norm,method = "euclidean")
+
+cluster=hclust(matriz.dist, method = "complete")
+plot(cluster)
+rect.hclust(cluster, k = 8)
+#cutree(cluster,k=8)
+
+cluster1.2 <- as.dendrogram(cluster)
+plot(cluster1.2)
+
+```
+
+```{r message=FALSE,warning=FALSE}
+
+df <- read.csv("Datos_de_delincuencia_Region_Metropolitana_de_Santiago.csv")
+
+head(df)
+
+```
+
+
+Ahora
+
+```{r message=FALSE,warning=FALSE}
+
+grupo.8<-cutree(cluster,k=8)
+#names(grupo.8)<-
+table(grupo.8,nci.labs)
+
+```
+
+Se identifica que los grupos 4 y 5 tienen Leukemia.
+
+
+## Problema 2
+
+1) filtre
+
+```{r message=FALSE,warning=FALSE}
+
+library(dplyr)
+df <- read.csv("C:/Users/USUARIO/OneDrive/COMPARTIR LENOVO/Programacion R/TareaR/Datos_de_delincuencia_Region_Metropolitana_de_Santiago.csv")
+
+df2016<-subset(df, Year==2016)
+
+              
+```
+
+2) Elimine las variables
+
+```{r message=FALSE}
+
+names(df)
+
+df2<-select(df2016,-Comuna,-Year,-Codigo,-density,-area_km2,-superficie,-comuna,-Pop )
+head(df2)
+
+```
+
+3) cambie los row names
+
+```{r warning=FALSE,message=FALSE}
+
+row.names(df2)<-df2016$Comuna
+
+head(df2,3)
+
+```
+
+4) Distancia euclediana
+
+```{r message=FALSE,warning=FALSE}
+
+df2.norm=scale(df2)
+df2.dist=dist(df2.norm,method = "euclidean")
+
+
+```
+
+
+> 5) analisis
+
+
+```{r message=FALSE,warning=FALSE}
+
+clusterP2=hclust(df2.dist, method = "ward.D2")
+plot(clusterP2)
+rect.hclust(clusterP2, k = 6)
+kcluster<-cutree(clusterP2,k=6)
+#Grupos
+kcluster
+```
+
+> P6 Correlacion
+
+```{r message=FALSE,warning=FALSE}
+M2<-cophenetic(clusterP2)
+cor(df2.dist,M2)
+
+```
+
+La correlacion es del 72%
+
+> P8 caracteristica media s de cada grupo
+
+
+```{r message=FALSE,warning=FALSE}
+
+
+df3<-data.frame(df2,kcluster)
+
+aggregate(df3[,1:14],list(df3$kcluster),mean)
+
+
+```
+Se observa en la tabla que la media de inc_Pc del grupo 6 es uno de los menores junto a grupo 1. donde grupo 6 (Santiago) pero es el de mayor tasa de homicidio.
+Grupo 1 junto a grupo 6 son lo de mayor tasa de homicidio.
+
+Se puede decir que se observa una relacion inversa a mayor INC_PC menor tasa de homicidio y viceversa, mayor tasa de homicidio menor INC_PC
+
+Pero en 
+
